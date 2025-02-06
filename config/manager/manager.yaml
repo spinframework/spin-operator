@@ -68,6 +68,7 @@ spec:
           image: ghcr.io/spinkube/spin-operator:latest
           name: manager
           imagePullPolicy: IfNotPresent
+          ports: []
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -94,5 +95,7 @@ spec:
             requests:
               cpu: 10m
               memory: 64Mi
+          volumeMounts: []
+      volumes: []
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
