@@ -630,3 +630,74 @@ func TestReconcile_Integration_Deployment_SpinCAInjection(t *testing.T) {
 	cancelFunc()
 	wg.Wait()
 }
+
+func TestReconcile_Integration_WorkloadIdentity_Azure(t *testing.T) {
+	t.Parallel()
+
+	envTest, mgr, _ := setupController(t)
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelFunc()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		require.NoError(t, mgr.Start(ctx))
+		wg.Done()
+	}()
+
+	// Create an executor that creates a deployment
+	executor := &spinv1alpha1.SpinAppExecutor{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "executor",
+			Namespace: "default",
+		},
+		Spec: spinv1alpha1.SpinAppExecutorSpec{
+			CreateDeployment: true,
+			DeploymentConfig: &spinv1alpha1.ExecutorDeploymentConfig{
+				RuntimeClassName: generics.Ptr("a-runtime-class"),
+			},
+		},
+	}
+
+	require.NoError(t, envTest.k8sClient.Create(ctx, executor))
+
+	spinApp := &spinv1alpha1.SpinApp{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "app",
+			Namespace: "default",
+		},
+		Spec: spinv1alpha1.SpinAppSpec{
+			Executor: "executor",
+			Image:    "ghcr.io/radu-matei/perftest:v1",
+			WorkloadIdentity: &spinv1alpha1.WorkloadIdentity{
+				ServiceAccountName: "custom-sa",
+				ProviderMetadata: map[string]string{
+					"azure": "true",
+				},
+			},
+		},
+	}
+
+	require.NoError(t, envTest.k8sClient.Create(ctx, spinApp))
+
+	// Wait for the underlying deployment to exist
+	var deployment appsv1.Deployment
+	require.Eventually(t, func() bool {
+		err := envTest.k8sClient.Get(ctx,
+			types.NamespacedName{
+				Namespace: "default",
+				Name:      "app"},
+			&deployment)
+		return err == nil
+	}, 3*time.Second, 100*time.Millisecond)
+
+	// Verify Azure workload identity label is set
+	require.Equal(t, "true", deployment.Spec.Template.ObjectMeta.Labels["azure.workload.identity/use"])
+	// Verify service account name is set
+	require.Equal(t, "custom-sa", deployment.Spec.Template.Spec.ServiceAccountName)
+
+	// Terminate the context to force the manager to shut down.
+	cancelFunc()
+	wg.Wait()
+}
