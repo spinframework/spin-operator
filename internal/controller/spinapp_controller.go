@@ -422,6 +422,15 @@ func constructDeployment(ctx context.Context, app *spinv1alpha1.SpinApp, config 
 	}
 	maps.Copy(templateLabels, readyLabels)
 
+	// Add Azure workload identity label if configured
+	if app.Spec.WorkloadIdentity != nil {
+		if val, ok := app.Spec.WorkloadIdentity.ProviderMetadata["azure"]; ok {
+			if val == "true" {
+				templateLabels["azure.workload.identity/use"] = "true"
+			}
+		}
+	}
+
 	// TODO: Once we land admission webhooks write some validation for this e.g.
 	// don't allow setting memory limit with cyclotron runtime.
 	resources := corev1.ResourceRequirements{
@@ -508,10 +517,11 @@ func constructDeployment(ctx context.Context, app *spinv1alpha1.SpinApp, config 
 					Annotations: templateAnnotations,
 				},
 				Spec: corev1.PodSpec{
-					RuntimeClassName: config.RuntimeClassName,
-					Containers:       []corev1.Container{container},
-					ImagePullSecrets: app.Spec.ImagePullSecrets,
-					Volumes:          volumes,
+					RuntimeClassName:   config.RuntimeClassName,
+					ServiceAccountName: getServiceAccountName(app),
+					Containers:         []corev1.Container{container},
+					ImagePullSecrets:   app.Spec.ImagePullSecrets,
+					Volumes:            volumes,
 				},
 			},
 		},
@@ -528,6 +538,16 @@ func constructDeployment(ctx context.Context, app *spinv1alpha1.SpinApp, config 
 	}
 
 	return dep, nil
+}
+
+// getServiceAccountName returns the service account name to use for the deployment.
+// If workload identity is configured, it returns the configured service account name.
+// Otherwise, it returns "default" which is the Kubernetes default.
+func getServiceAccountName(app *spinv1alpha1.SpinApp) string {
+	if app.Spec.WorkloadIdentity != nil {
+		return app.Spec.WorkloadIdentity.ServiceAccountName
+	}
+	return "default"
 }
 
 // findDeploymentForApp finds the deployment for a SpinApp.

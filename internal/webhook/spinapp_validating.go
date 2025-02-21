@@ -64,6 +64,9 @@ func (v *SpinAppValidator) validateSpinApp(ctx context.Context, spinApp *spinv1a
 	if err := validateAnnotations(spinApp.Spec, executor); err != nil {
 		allErrs = append(allErrs, err)
 	}
+	if err := validateWorkloadIdentity(spinApp.Spec); err != nil {
+		allErrs = append(allErrs, err)
+	}
 	if len(allErrs) == 0 {
 		return nil
 	}
@@ -133,6 +136,20 @@ func validateAnnotations(spec spinv1alpha1.SpinAppSpec, executor *spinv1alpha1.S
 	}
 	if len(spec.PodAnnotations) != 0 {
 		return field.Invalid(field.NewPath("spec").Child("podAnnotations"), spec.PodAnnotations, "podAnnotations can't be set when the executor does not use operator deployments")
+	}
+
+	return nil
+}
+
+func validateWorkloadIdentity(spec spinv1alpha1.SpinAppSpec) *field.Error {
+	if spec.WorkloadIdentity == nil {
+		return nil
+	}
+
+	if spec.WorkloadIdentity.ServiceAccountName == "" {
+		return field.Required(
+			field.NewPath("spec").Child("workloadIdentity").Child("serviceAccountName"),
+			"serviceAccountName must be provided when workload identity is configured")
 	}
 
 	return nil
