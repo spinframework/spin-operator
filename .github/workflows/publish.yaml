@@ -21,7 +21,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup version info
         id: version
@@ -75,7 +75,7 @@ jobs:
       CHART_REGISTRY: "ghcr.io/${{ github.repository_owner }}/charts"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # Fetching all history as we may use the latest tag for versioning
           # Unfortunately, just using 'fetch-tags: true' on the actions/checkout configuration
@@ -149,7 +149,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: download release assets
         uses: actions/download-artifact@v4
