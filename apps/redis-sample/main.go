@@ -5,9 +5,10 @@ import (
 	"io"
 	"net/http"
 
-	spinhttp "github.com/fermyon/spin/sdk/go/v2/http"
-	"github.com/fermyon/spin/sdk/go/v2/redis"
-	"github.com/fermyon/spin/sdk/go/v2/variables"
+	spinhttp "github.com/spinframework/spin-go-sdk/v2/http"
+
+	"github.com/spinframework/spin-go-sdk/v2/redis"
+	"github.com/spinframework/spin-go-sdk/v2/variables"
 )
 
 var rdb *redis.Client

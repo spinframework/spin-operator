@@ -1,10 +1,7 @@
 module github.com/spinkube/spin-operator/outbound-http
 
-go 1.20
+go 1.25.3
 
-require github.com/fermyon/spin/sdk/go/v2 v2.0.0
+require github.com/spinframework/spin-go-sdk/v2 v2.2.1
 
-require (
-	github.com/fermyon/spin-go-sdk v0.0.0-20240220234050-48ddef7a2617 // indirect
-	github.com/julienschmidt/httprouter v1.3.0 // indirect
-)
+require github.com/julienschmidt/httprouter v1.3.0 // indirect

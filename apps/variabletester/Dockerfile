@@ -1,4 +1,4 @@
-FROM --platform=${BUILDPLATFORM} tinygo/tinygo:0.30.0 AS build
+FROM --platform=${BUILDPLATFORM} tinygo/tinygo:0.39.0 AS build
 WORKDIR /opt/build
 
 COPY go.mod go.sum .
