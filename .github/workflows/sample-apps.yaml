@@ -1,27 +1,28 @@
-name: Publish Sample Apps
+name: Build and Publish Sample Apps
 
 on:
   push:
     branches:
       - main
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
-  publish-image:
-    name: Publish sample app images
+  build-and-publish:
+    name: Build and publish sample app images
     runs-on: ubuntu-latest
     strategy:
         matrix:
           app: [cpu-load-gen, hello-world, outbound-http, variabletester, redis-sample, salutations]
-    env:
-      IMAGE_NAME: ${{ github.repository }}
 
     steps:
         - uses: actions/checkout@v5
 
-        - name: Set the release version
+        # This version tag is only needed when publishing the image on a push to main.
+        - name: Set release version
+          if: github.ref_name == 'main' && github.event_name == 'push'
           shell: bash
           run: |
             echo "RELEASE_VERSION=$(date +%Y%m%d-%H%M%S)-g$(git rev-parse --short HEAD)" >> $GITHUB_ENV
@@ -39,7 +40,17 @@ jobs:
           with:
             tinygo-version: '0.39.0'
 
-        - name: Build and push versioned image
+        # For pull requests, we only build the application to validate it.
+        - name: Build application on PR
+          if: github.event_name == 'pull_request'
+          uses: fermyon/actions/spin/build@v1
+          with:
+            manifest_file: apps/${{ matrix.app }}/spin.toml
+
+        # For pushes to the main branch, we build and push the image to the registry.
+        # The spin/push action handles the build, login, and push operations.
+        - name: Build and Push image on main branch push
+          if: github.ref_name == 'main' && github.event_name == 'push'
           uses: fermyon/actions/spin/push@v1
           with:
             registry: ${{ env.REGISTRY }}
