@@ -57,19 +57,19 @@ jobs:
           paths: ".results/results.xml"
         if: always()
       - name: Upload test results
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: results.xml
           path: ./.results/results.xml
         if: always()
       - name: Upload test coverage
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: cover.out
           path: ./.results/cover.out
         if: always()
       - name: Upload Go test results json
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: results.json
           path: ./.results/results.json
