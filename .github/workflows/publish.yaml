@@ -126,7 +126,7 @@ jobs:
           helm lint _dist/spin-operator-${{ env.CHART_VERSION }}.tgz
 
       - name: Upload chart and manifests as GitHub artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: spin-operator
           path: _dist
