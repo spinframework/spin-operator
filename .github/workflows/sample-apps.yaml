@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
@@ -40,6 +41,7 @@ jobs:
             tinygo-version: '0.39.0'
 
         - name: Build and push versioned image
+          if: github.event_name == 'push'
           uses: fermyon/actions/spin/push@v1
           with:
             registry: ${{ env.REGISTRY }}
