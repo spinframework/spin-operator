@@ -9,6 +9,7 @@ controllerManager:
     args:
     - --health-probe-bind-address=:8082
     - --metrics-bind-address=:8443
+    - --metrics-cert-path=/tmp/k8s-metrics-server/metrics-certs
     - --leader-elect
     - --enable-webhooks
     ## containerSecurityContext defines privilege and access control for the
