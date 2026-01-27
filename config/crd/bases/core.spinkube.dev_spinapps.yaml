@@ -24,6 +24,14 @@ spec:
     - jsonPath: .spec.executor
       name: Executor
       type: string
+    - jsonPath: .metadata.name
+      name: Deployment
+      priority: 1
+      type: string
+    - jsonPath: .metadata.name
+      name: Service
+      priority: 1
+      type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
