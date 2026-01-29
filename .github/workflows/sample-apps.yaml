@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
@@ -38,8 +39,13 @@ jobs:
           uses: acifani/setup-tinygo@v2
           with:
             tinygo-version: '0.39.0'
+        - name: Build sample app
+          if: github.event_name == 'pull_request'
+          run: |
+            spin build -f apps/${{ matrix.app }}/spin.toml
 
-        - name: Build and push versioned image
+        - name: Build and push sample app image
+          if: github.event_name == 'push'
           uses: fermyon/actions/spin/push@v1
           with:
             registry: ${{ env.REGISTRY }}
