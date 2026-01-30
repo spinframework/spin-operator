@@ -1,0 +1,19 @@
+apiVersion: core.spinoperator.dev/v1alpha1
+kind: SpinApp
+metadata:
+  name: vault-provider
+spec:
+  image: "ttl.sh/vault-provider:3m"
+  executor: containerd-shim-spin
+  replicas: 1
+  runtimeConfig:
+    # loadFromSecret can be used to supply generic runtime config to a SpinApp via a Kubernetes secret.
+    loadFromSecret: vault-provider-runtime-config
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-provider-runtime-config
+type: Opaque
+data:
+  runtime-config.toml: W1tjb25maWdfcHJvdmlkZXJdXQp0eXBlID0gInZhdWx0Igp1cmwgPSAiaHR0cHM6Ly9teS12YXVsdC1zZXJ2ZXI6ODIwMCIKdG9rZW4gPSAibXlfdG9rZW4iCm1vdW50ID0gImFkbWluL3NlY3JldCIK
