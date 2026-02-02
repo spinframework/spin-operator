@@ -10,7 +10,7 @@ import (
 func init() {
 	spinhttp.Handle(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
-		fmt.Fprintln(w, "Hello Fermyon!")
+		fmt.Fprintln(w, "Hello SpinKube!")
 	})
 }
 

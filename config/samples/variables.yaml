@@ -8,4 +8,4 @@ spec:
   executor: containerd-shim-spin
   variables:
     - name: greetee
-      value: Fermyon
+      value: SpinKube
