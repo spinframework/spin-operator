@@ -24,11 +24,11 @@ spec:
     - jsonPath: .spec.executor
       name: Executor
       type: string
-    - jsonPath: .metadata.name
+    - jsonPath: .status.deploymentName
       name: Deployment
       priority: 1
       type: string
-    - jsonPath: .metadata.name
+    - jsonPath: .status.serviceName
       name: Service
       priority: 1
       type: string
@@ -2731,11 +2731,19 @@ spec:
                   - type
                   type: object
                 type: array
+              deploymentName:
+                description: DeploymentName is the name of the deployment created
+                  for this SpinApp.
+                type: string
               readyReplicas:
                 description: Represents the current number of active replicas on the
                   application deployment.
                 format: int32
                 type: integer
+              serviceName:
+                description: ServiceName is the name of the service created for this
+                  SpinApp.
+                type: string
             required:
             - readyReplicas
             type: object

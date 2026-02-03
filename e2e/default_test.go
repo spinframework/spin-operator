@@ -65,6 +65,22 @@ func TestDefaultSetup(t *testing.T) {
 			}
 			return ctx
 		}).
+		Assess("spin app status contains deployment and service names", func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			var app spinapps_v1alpha1.SpinApp
+			if err := client.Resources().Get(ctx, testSpinAppName, testNamespace, &app); err != nil {
+				t.Fatalf("Failed to get spinapp: %s", err)
+			}
+
+			if app.Status.DeploymentName != testSpinAppName {
+				t.Errorf("Expected status.deploymentName to be %s, got %s", testSpinAppName, app.Status.DeploymentName)
+			}
+
+			if app.Status.ServiceName != testSpinAppName {
+				t.Errorf("Expected status.serviceName to be %s, got %s", testSpinAppName, app.Status.ServiceName)
+			}
+
+			return ctx
+		}).
 		Feature()
 	testEnv.Test(t, defaultTest)
 }

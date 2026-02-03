@@ -165,6 +165,8 @@ func (r *SpinAppReconciler) updateStatus(ctx context.Context, app *spinv1alpha1.
 
 	// Set the active scheduler
 	app.Status.ActiveScheduler = app.Spec.Executor
+	app.Status.DeploymentName = app.Name
+	app.Status.ServiceName = app.Name
 
 	deployment, err := r.findDeploymentForApp(ctx, app)
 	if client.IgnoreNotFound(err) != nil {
