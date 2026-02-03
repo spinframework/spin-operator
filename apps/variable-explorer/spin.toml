@@ -8,7 +8,7 @@ description = ""
 
 [variables]
 log_level = { default = "WARN" }
-platform_name = { default = "Fermyon Cloud" }
+platform_name = { default = "SpinKube" }
 db_password = { required = true }
 
 [[trigger.http]]
