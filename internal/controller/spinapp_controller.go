@@ -165,13 +165,25 @@ func (r *SpinAppReconciler) updateStatus(ctx context.Context, app *spinv1alpha1.
 
 	// Set the active scheduler
 	app.Status.ActiveScheduler = app.Spec.Executor
-	app.Status.DeploymentName = app.Name
-	app.Status.ServiceName = app.Name
 
 	deployment, err := r.findDeploymentForApp(ctx, app)
 	if client.IgnoreNotFound(err) != nil {
 		log.Error(err, "Unable to find deployment for app")
 		return err
+	}
+
+	if deployment != nil {
+		app.Status.DeploymentName = deployment.Name
+	}
+
+	service, err := r.findServiceForApp(ctx, app)
+	if client.IgnoreNotFound(err) != nil {
+		log.Error(err, "Unable to find service for app")
+		return err
+	}
+
+	if service != nil {
+		app.Status.ServiceName = service.Name
 	}
 
 	if apierrors.IsNotFound(err) {
@@ -566,4 +578,14 @@ func (r *SpinAppReconciler) findDeploymentForApp(ctx context.Context, app *spinv
 		return nil, err
 	}
 	return &deployment, nil
+}
+
+// findServiceForApp finds the service for a SpinApp.
+func (r *SpinAppReconciler) findServiceForApp(ctx context.Context, app *spinv1alpha1.SpinApp) (*corev1.Service, error) {
+	var service corev1.Service
+	err := r.Client.Get(ctx, types.NamespacedName{Name: app.Name, Namespace: app.Namespace}, &service)
+	if err != nil {
+		return nil, err
+	}
+	return &service, nil
 }
