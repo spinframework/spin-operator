@@ -115,6 +115,12 @@ type SpinAppStatus struct {
 
 	// Represents the current number of active replicas on the application deployment.
 	ReadyReplicas int32 `json:"readyReplicas"`
+
+	// DeploymentName is the name of the deployment created for this SpinApp.
+	DeploymentName string `json:"deploymentName,omitempty"`
+
+	// ServiceName is the name of the service created for this SpinApp.
+	ServiceName string `json:"serviceName,omitempty"`
 }
 
 // SpinApp is the Schema for the spinapps API
@@ -124,6 +130,8 @@ type SpinAppStatus struct {
 // +kubebuilder:printcolumn:JSONPath=".status.readyReplicas",name=Ready,type=integer
 // +kubebuilder:printcolumn:JSONPath=".spec.replicas",name=Desired,type=integer
 // +kubebuilder:printcolumn:JSONPath=".spec.executor",name=Executor,type=string
+// +kubebuilder:printcolumn:JSONPath=".status.deploymentName",name=Deployment,type=string,priority=1
+// +kubebuilder:printcolumn:JSONPath=".status.serviceName",name=Service,type=string,priority=1
 type SpinApp struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

@@ -5,9 +5,11 @@ import (
 	"testing"
 	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/e2e-framework/klient"
+	"sigs.k8s.io/e2e-framework/klient/k8s/resources"
 	"sigs.k8s.io/e2e-framework/klient/wait"
 	"sigs.k8s.io/e2e-framework/klient/wait/conditions"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
@@ -63,6 +65,42 @@ func TestDefaultSetup(t *testing.T) {
 			); err != nil {
 				t.Fatal(err)
 			}
+			return ctx
+		}).
+		Assess("spin app status contains deployment and service names", func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			var app spinapps_v1alpha1.SpinApp
+			if err := client.Resources().Get(ctx, testSpinAppName, testNamespace, &app); err != nil {
+				t.Fatalf("Failed to get spinapp: %s", err)
+			}
+
+			// Get the deployment by label
+			var deploymentList appsv1.DeploymentList
+			if err := client.Resources(testNamespace).List(ctx, &deploymentList, resources.WithLabelSelector("core.spinkube.dev/app-name="+testSpinAppName)); err != nil {
+				t.Fatalf("Failed to list deployments: %s", err)
+			}
+			if len(deploymentList.Items) != 1 {
+				t.Fatalf("Expected 1 deployment, got %d", len(deploymentList.Items))
+			}
+			deployment := deploymentList.Items[0]
+
+			if app.Status.DeploymentName != deployment.Name {
+				t.Errorf("Expected status.deploymentName to be %s, got %s", deployment.Name, app.Status.DeploymentName)
+			}
+
+			// Get the service by label
+			var serviceList corev1.ServiceList
+			if err := client.Resources(testNamespace).List(ctx, &serviceList, resources.WithLabelSelector("core.spinkube.dev/app-name="+testSpinAppName)); err != nil {
+				t.Fatalf("Failed to list services: %s", err)
+			}
+			if len(serviceList.Items) != 1 {
+				t.Fatalf("Expected 1 service, got %d", len(serviceList.Items))
+			}
+			service := serviceList.Items[0]
+
+			if app.Status.ServiceName != service.Name {
+				t.Errorf("Expected status.serviceName to be %s, got %s", service.Name, app.Status.ServiceName)
+			}
+
 			return ctx
 		}).
 		Feature()

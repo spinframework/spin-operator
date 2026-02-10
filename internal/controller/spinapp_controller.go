@@ -172,6 +172,10 @@ func (r *SpinAppReconciler) updateStatus(ctx context.Context, app *spinv1alpha1.
 		return err
 	}
 
+	if deployment != nil {
+		app.Status.DeploymentName = deployment.Name
+	}
+
 	if apierrors.IsNotFound(err) {
 		// Deployment doesn't exist yet so set conditions as unknown
 		meta.SetStatusCondition(
@@ -216,6 +220,16 @@ func (r *SpinAppReconciler) updateStatus(ctx context.Context, app *spinv1alpha1.
 			}
 		}
 		app.Status.ReadyReplicas = deployment.Status.ReadyReplicas
+	}
+
+	service, err := r.findServiceForApp(ctx, app)
+	if client.IgnoreNotFound(err) != nil {
+		log.Error(err, "Unable to find service for app")
+		return err
+	}
+
+	if service != nil {
+		app.Status.ServiceName = service.Name
 	}
 
 	if err := r.Client.Status().Update(ctx, app); err != nil {
@@ -564,4 +578,14 @@ func (r *SpinAppReconciler) findDeploymentForApp(ctx context.Context, app *spinv
 		return nil, err
 	}
 	return &deployment, nil
+}
+
+// findServiceForApp finds the service for a SpinApp.
+func (r *SpinAppReconciler) findServiceForApp(ctx context.Context, app *spinv1alpha1.SpinApp) (*corev1.Service, error) {
+	var service corev1.Service
+	err := r.Client.Get(ctx, types.NamespacedName{Name: app.Name, Namespace: app.Namespace}, &service)
+	if err != nil {
+		return nil, err
+	}
+	return &service, nil
 }
