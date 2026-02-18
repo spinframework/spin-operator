@@ -25,7 +25,7 @@ jobs:
         uses: engineerd/configurator@v0.0.10
         with:
           name: k3d
-          url: https://github.com/k3d-io/k3d/releases/download/v5.6.0/k3d-linux-amd64
+          url: https://github.com/k3d-io/k3d/releases/download/v5.8.3/k3d-linux-amd64
 
       - name: create spin-operator docker image
         run: make docker-build IMG=spin-operator:latest
@@ -33,7 +33,7 @@ jobs:
       - name: start k3d cluster
         run: |
           k3d cluster create wasm-cluster \
-          --image ghcr.io/spinkube/containerd-shim-spin/k3d:v0.14.0 \
+          --image ghcr.io/spinframework/containerd-shim-spin/k3d:v0.22.0 \
           --port  "8081:80@loadbalancer" \
           --agents 2
 
