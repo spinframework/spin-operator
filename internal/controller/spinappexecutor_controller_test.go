@@ -25,8 +25,10 @@ import (
 	spinv1alpha1 "github.com/spinframework/spin-operator/api/v1alpha1"
 	"github.com/spinframework/spin-operator/internal/generics"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	controllerconfig "sigs.k8s.io/controller-runtime/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -144,4 +146,100 @@ func testContainerdShimSpinExecutor() *spinv1alpha1.SpinAppExecutor {
 			},
 		},
 	}
+}
+
+func TestSpinAppExecutorReconcile_CrossNamespaceDoesNotBlockDeletion(t *testing.T) {
+	t.Parallel()
+
+	envTest, mgr, _ := setupExecutorController(t)
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelFunc()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		require.NoError(t, mgr.Start(ctx))
+		wg.Done()
+	}()
+
+	// Create two namespaces
+	nsA := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "test-ns-a"}}
+	nsB := &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "test-ns-b"}}
+	require.NoError(t, envTest.k8sClient.Create(ctx, nsA))
+	require.NoError(t, envTest.k8sClient.Create(ctx, nsB))
+
+	// Create an executor with the same name in both namespaces
+	executorA := &spinv1alpha1.SpinAppExecutor{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "containerd-shim-spin",
+			Namespace: "test-ns-a",
+		},
+		Spec: spinv1alpha1.SpinAppExecutorSpec{
+			CreateDeployment: true,
+			DeploymentConfig: &spinv1alpha1.ExecutorDeploymentConfig{
+				RuntimeClassName: generics.Ptr("wasmtime-spin-v2"),
+			},
+		},
+	}
+	executorB := &spinv1alpha1.SpinAppExecutor{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "containerd-shim-spin",
+			Namespace: "test-ns-b",
+		},
+		Spec: spinv1alpha1.SpinAppExecutorSpec{
+			CreateDeployment: true,
+			DeploymentConfig: &spinv1alpha1.ExecutorDeploymentConfig{
+				RuntimeClassName: generics.Ptr("wasmtime-spin-v2"),
+			},
+		},
+	}
+	require.NoError(t, envTest.k8sClient.Create(ctx, executorA))
+	require.NoError(t, envTest.k8sClient.Create(ctx, executorB))
+
+	// Wait for finalizers to be added by the controller
+	require.Eventually(t, func() bool {
+		var exec spinv1alpha1.SpinAppExecutor
+		if err := envTest.k8sClient.Get(ctx, client.ObjectKeyFromObject(executorA), &exec); err != nil {
+			return false
+		}
+		return len(exec.Finalizers) > 0
+	}, 5*time.Second, 100*time.Millisecond, "executor A should have finalizer")
+
+	require.Eventually(t, func() bool {
+		var exec spinv1alpha1.SpinAppExecutor
+		if err := envTest.k8sClient.Get(ctx, client.ObjectKeyFromObject(executorB), &exec); err != nil {
+			return false
+		}
+		return len(exec.Finalizers) > 0
+	}, 5*time.Second, 100*time.Millisecond, "executor B should have finalizer")
+
+	// Create a SpinApp in namespace B that references the executor by name
+	spinApp := &spinv1alpha1.SpinApp{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-app",
+			Namespace: "test-ns-b",
+		},
+		Spec: spinv1alpha1.SpinAppSpec{
+			Executor: "containerd-shim-spin",
+			Image:    "ghcr.io/spinkube/containerd-shim-spin/examples/spin-rust-hello:v0.15.1",
+			Replicas: 1,
+		},
+	}
+	require.NoError(t, envTest.k8sClient.Create(ctx, spinApp))
+
+	// Delete executor in namespace A — this should succeed because
+	// the SpinApp is in namespace B, not namespace A.
+	require.NoError(t, envTest.k8sClient.Delete(ctx, executorA))
+
+	// The executor in namespace A should be fully deleted (finalizer removed)
+	require.Eventually(t, func() bool {
+		var exec spinv1alpha1.SpinAppExecutor
+		err := envTest.k8sClient.Get(ctx, client.ObjectKeyFromObject(executorA), &exec)
+		return err != nil // NotFound means it was deleted
+	}, 5*time.Second, 100*time.Millisecond, "executor A should be deleted — SpinApp in namespace B should not block it")
+
+	// Verify executor in namespace B still exists (it has a dependent SpinApp)
+	var execB spinv1alpha1.SpinAppExecutor
+	require.NoError(t, envTest.k8sClient.Get(ctx, client.ObjectKeyFromObject(executorB), &execB))
 }
