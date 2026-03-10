@@ -3,7 +3,7 @@ kind: SpinApp
 metadata:
   name: healthchecks-spinapp
 spec:
-  image: "ghcr.io/spinkube/containerd-shim-spin/examples/spin-rust-hello:v0.13.0"
+  image: "ghcr.io/spinframework/containerd-shim-spin/examples/spin-rust-hello:v0.23.0"
   replicas: 1
   executor: containerd-shim-spin
   checks:
