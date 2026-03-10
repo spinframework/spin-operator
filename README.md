@@ -56,7 +56,7 @@ Create a k3d cluster:
 
 ```shell
 k3d cluster create wasm-cluster \
-    --image ghcr.io/spinkube/containerd-shim-spin/k3d:v0.16.0 \
+    --image ghcr.io/spinframework/containerd-shim-spin/k3d:v0.23.0 \
     -p "8081:80@loadbalancer" \
     --agents 2
 ```
