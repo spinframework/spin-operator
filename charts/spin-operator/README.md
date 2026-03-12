@@ -12,7 +12,9 @@ Prior to installing the chart, you'll need to ensure the following:
 
 - [Cert Manager](https://github.com/cert-manager/cert-manager) to automatically provision and manage TLS certificates (used by spin-operator's admission webhook system). Cert Manager must be running and the corresponding CRDs must be present on the cluster before installing the spin-operator chart.
 
-- [Kwasm Operator](https://github.com/kwasm/kwasm-operator) to install WebAssembly support on Kubernetes nodes. See the [project README.md](https://github.com/KWasm/kwasm-operator/blob/main/README.md) for installation and configuration steps, including annotating nodes to run Spin/wasm workloads.
+- [Runtime Class Manager](https://github.com/spinframework/runtime-class-manager) to install WebAssembly support on Kubernetes nodes.
+
+  > See the latest [SpinKube docs](https://www.spinkube.dev/docs/install/installing-with-helm/#prepare-the-cluster) on how to install these prerequisites.
 
 - spin-operator CustomResourceDefinition (CRD) resources are installed. This includes the SpinApp CRD representing Spin applications to be scheduled on the cluster.
 
@@ -43,12 +45,6 @@ spin-operator depends on the following resources. If not already present on the 
   $ kubectl apply -f https://raw.githubusercontent.com/spinframework/spin-operator/main/config/samples/spin-shim-executor.yaml
   ```
 
-- A RuntimeClass resource for the `wasmtime-spin-v2` container runtime is installed. This is the runtime that Spin applications use.
-
-  ```console
-  $ kubectl apply -f https://raw.githubusercontent.com/spinframework/spin-operator/main/config/samples/spin-runtime-class.yaml
-  ```
-
 ## Upgrading the chart
 
 Note that you may also need to upgrade the spin-operator CRDs in tandem with upgrading the Helm release:
@@ -77,10 +73,9 @@ $ helm delete spin-operator --namespace spin-operator
 
 This will remove all Kubernetes resources associated with the chart and deletes the Helm release.
 
-To completely uninstall all resources related to spin-operator, you may want to delete the corresponding CRD resources and, optionally, the RuntimeClass:
+To completely uninstall all resources related to spin-operator, you may want to delete the corresponding SpinAppExecutor and CRD resources:
 
 ```console
-$ kubectl delete -f https://raw.githubusercontent.com/spinframework/spin-operator/main/config/samples/spin-runtime-class.yaml
 $ kubectl delete -f https://raw.githubusercontent.com/spinframework/spin-operator/main/config/samples/spin-shim-executor.yaml
 $ kubectl delete -f https://raw.githubusercontent.com/spinframework/spin-operator/main/config/crd/bases/core.spinkube.dev_spinapps.yaml
 $ kubectl delete -f https://raw.githubusercontent.com/spinframework/spin-operator/main/config/crd/bases/core.spinkube.dev_spinappexecutors.yaml

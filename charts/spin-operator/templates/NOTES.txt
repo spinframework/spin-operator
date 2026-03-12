@@ -15,9 +15,12 @@ already done so, please ensure the following:
 
   $ kubectl apply -f https://github.com/spinframework/spin-operator/releases/download/v{{ .Chart.Version }}/spin-operator.shim-executor.yaml
 
-2. Install the wasmtime-spin-v2 RuntimeClass:
+2. Install the Runtime Class Manager chart if not already installed (See https://www.spinkube.dev/docs/install/installing-with-helm/#prepare-the-cluster)
 
-  $ kubectl apply -f https://github.com/spinframework/spin-operator/releases/download/v{{ .Chart.Version }}/spin-operator.runtime-class.yaml
+3. Apply the Shim resource to install containerd-shim-spin onto the cluster nodes and apply the corresponding label:
+
+  $ kubectl apply -f https://raw.githubusercontent.com/spinframework/runtime-class-manager/refs/tags/v0.2.0/config/samples/sample_shim_spin.yaml
+  $ kubectl label node --all spin=true
 
 You are now ready to deploy your first Spin app!
 
