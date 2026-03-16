@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/utils"
 )
 
-const k3dImage = "ghcr.io/spinkube/containerd-shim-spin/k3d:20241015-215845-g71c8351"
+const k3dImage = "ghcr.io/spinframework/containerd-shim-spin/k3d:v0.23.0"
 
 var k3dBin = "k3d"
 
