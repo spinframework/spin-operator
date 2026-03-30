@@ -17,7 +17,7 @@ jobs:
           go-version: "1.25.x"
 
       - name: Install helm
-        uses: Azure/setup-helm@v4
+        uses: Azure/setup-helm@v5
         with:
           version: v3.14.0
 
