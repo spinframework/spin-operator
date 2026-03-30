@@ -60,7 +60,7 @@ func setupExecutorController(t *testing.T) (*envTestState, ctrl.Manager, *SpinAp
 	require.NoError(t, err)
 
 	ctrlr := &SpinAppExecutorReconciler{
-		Client:   envTest.k8sClient,
+		Client:   mgr.GetClient(),
 		Scheme:   envTest.scheme,
 		Recorder: mgr.GetEventRecorderFor("spinappexecutor-reconciler"),
 	}
