@@ -103,7 +103,7 @@ func (r *SpinAppExecutorReconciler) handleDeletion(ctx context.Context, executor
 	log := logging.FromContext(ctx)
 
 	var spinApps spinv1alpha1.SpinAppList
-	if err := r.Client.List(ctx, &spinApps, client.MatchingFields{spinAppExecutorKey: executor.Name}); err != nil {
+	if err := r.Client.List(ctx, &spinApps, client.InNamespace(executor.Namespace), client.MatchingFields{spinAppExecutorKey: executor.Name}); err != nil {
 		log.Error(err, "Unable to list SpinApps")
 		return err
 	}
