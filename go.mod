@@ -1,6 +1,6 @@
 module github.com/spinframework/spin-operator
 
-go 1.25.3
+go 1.26.2
 
 require (
 	github.com/go-logr/logr v1.4.3
