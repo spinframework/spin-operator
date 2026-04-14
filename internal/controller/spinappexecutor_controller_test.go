@@ -26,6 +26,7 @@ import (
 	"github.com/spinframework/spin-operator/internal/generics"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -236,7 +237,7 @@ func TestSpinAppExecutorReconcile_CrossNamespaceDoesNotBlockDeletion(t *testing.
 	require.Eventually(t, func() bool {
 		var exec spinv1alpha1.SpinAppExecutor
 		err := envTest.k8sClient.Get(ctx, client.ObjectKeyFromObject(executorA), &exec)
-		return err != nil // NotFound means it was deleted
+		return apierrors.IsNotFound(err) // NotFound means it was deleted
 	}, 5*time.Second, 100*time.Millisecond, "executor A should be deleted — SpinApp in namespace B should not block it")
 
 	// Verify executor in namespace B still exists (it has a dependent SpinApp)
