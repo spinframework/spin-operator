@@ -33,7 +33,8 @@ jobs:
         - name: Setup Go
           uses: actions/setup-go@v6
           with:
-            go-version: '1.26.x'
+            # TODO: bump this and all sample apps to match go-version used elsewhere; needs tinygo >= 0.41.0
+            go-version: '1.25.x'
 
         - name: Install TinyGo
           uses: acifani/setup-tinygo@v2
