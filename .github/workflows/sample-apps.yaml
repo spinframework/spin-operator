@@ -37,7 +37,7 @@ jobs:
             go-version: '1.25.x'
 
         - name: Install TinyGo
-          uses: acifani/setup-tinygo@v2
+          uses: acifani/setup-tinygo@v3
           with:
             tinygo-version: '0.39.0'
         - name: Build sample app
