@@ -20,7 +20,7 @@ jobs:
       IMAGE_NAME: ${{ github.repository }}
 
     steps:
-        - uses: actions/checkout@v6
+        - uses: actions/checkout@v7
 
         - name: Set the release version
           shell: bash
