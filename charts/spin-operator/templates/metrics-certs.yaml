@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "spin-operator.fullname" . }}-metrics-certs
+  labels:
+  {{- include "spin-operator.labels" . | nindent 4 }}
+spec:
+  dnsNames:
+  - '{{ include "{{ .Release.Namespace }}.fullname" . }}-metrics-service.{{ .Release.Namespace
+    }}.svc'
+  - '{{ include "{{ .Release.Namespace }}.fullname" . }}-metrics-service.{{ .Release.Namespace
+    }}.svc.{{ .Values.kubernetesClusterDomain }}'
+  issuerRef:
+    kind: Issuer
+    name: '{{ include "spin-operator.fullname" . }}-selfsigned-issuer'
+  secretName: metrics-server-cert
