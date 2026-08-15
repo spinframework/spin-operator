@@ -28,6 +28,7 @@ controllerManager:
       ## version may lead to unexpected or broken behavior.
       # tag: latest
     imagePullPolicy: IfNotPresent
+    imagePullSecrets: []
     ## resources represent default cpu/mem limits for the operator container.
     resources:
       # TODO: update these per https://github.com/spinframework/spin-operator/issues/21
