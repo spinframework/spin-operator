@@ -73,6 +73,8 @@ spec:
           readOnly: true
       securityContext:
         runAsNonRoot: true
+      imagePullSecrets:
+      {{- toYaml .Values.controllerManager.manager.imagePullSecrets | nindent 8 }}
       serviceAccountName: {{ include "spin-operator.fullname" . }}-controller-manager
       terminationGracePeriodSeconds: 10
       volumes:
